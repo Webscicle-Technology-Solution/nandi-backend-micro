@@ -1,0 +1,46 @@
+# Node modules
+node_modules/
+
+#Downloaded movies
+downloads/
+
+__dirname, ..
+
+#upload service folder
+uploads/
+
+# Log files
+*.log
+combined.log
+error.log
+
+# Environment variable files
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# npm debug files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE specific files (you can remove the ones that don’t apply)
+.vscode/
+.idea/
+
+# Optional: If you're using Docker
+docker-compose.override.yml
+*.dockerfile
+
+# Optional: if you're using a build system like Webpack
+dist/
+build/
+
+# Optional: coverage folder (from test runners like Mocha, Jest, etc.)
+coverage/
+
+# Optional: Test files
+*.test.js
+*.spec.js

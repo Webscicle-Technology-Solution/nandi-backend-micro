@@ -1,0 +1,198 @@
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "3001:3000"
+    env_file: ./api-gateway/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - AUTH_SERVICE_URL=http://auth-service:3002
+      - ADMIN_METADATA_SERVICE_URL=http://metadata-service:3003
+      - DRM_SERVICE_URL=http://drm-service:3006
+      - PROCESSING_SERVICE_URL=http://processing-service:3004
+      - ADMIN_UPLOAD_SERVICE_URL=http://upload-media-service:3005
+      - CONTENT_SERVICE_URL=http://content-service:3007
+      - PAYMENT_SERVICE_URL=http://payment-service:3009
+      - ANALYTICS_SERVICE_URL=http://analytics-service:3020
+      - ADMIN_NOTIFICATION_SERVICE_URL=http://notification-service:3015
+    networks:
+      - app-network
+
+  auth-service:
+    build: ./core-services/auth-service
+    env_file: ./core-services/auth-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - PAYMENT_SERVICE_URL=http://payment-service:3009
+    networks:
+      - app-network
+
+  drm-service:
+    build: ./core-services/drm-service
+    env_file: ./core-services/drm-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - API_GATEWAY_URL=https://demoapinandi.webscicle.com
+      - AUTH_SERVICE_URL=http://auth-service:3002
+      - ADMIN_METADATA_SERVICE_URL=http://metadata-service:3003
+
+    networks:
+      - app-network
+
+  metadata-service:
+    build: ./admin-services/metadata-service
+    env_file: ./admin-services/metadata-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - app-network
+
+  analytics-service:
+    build: ./admin-services/analytics-service
+    env_file: ./admin-services/analytics-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    networks:
+      - app-network
+
+  processing-service:
+    build: ./admin-services/processing-service
+    env_file: ./admin-services/processing-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - DRM_SERVICE_URL=http://drm-service:3006
+      - API_GATEWAY_URL=https://demoapinandi.webscicle.com
+
+    networks:
+      - app-network
+
+  upload-media-service:
+    build: ./admin-services/upload-media-service
+    env_file: ./admin-services/upload-media-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+    ports:
+      - "3005:3005"
+    networks:
+      - app-network
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - app-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - app-network
+
+  content-service:
+    build: ./core-services/content-service
+    env_file: ./core-services/content-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - ADMIN_UPLOAD_SERVICE_URL=http://upload-media-service:3005 # Ensure this is under 'environment' correctly
+    networks:
+      - app-network
+
+  payment-service:
+    build: ./core-services/payment-service
+    env_file: ./core-services/payment-service/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - AUTH_SERVICE_URL=http://auth-service:3002 # Ensure this is under 'environment' correctly
+      - ADMIN_METADATA_SERVICE_URL=http://metadata-service:3003
+    networks:
+      - app-network
+
+  notification-service:
+    build: ./admin-services/notification-serivice
+    env_file: ./admin-services/notification-serivice/.env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - RABBITMQ_URL=amqp://rabbitmq:5672
+      - AUTH_SERVICE_URL=http://auth-service:3002 # Ensure this is under 'environment' correctly
+      - ADMIN_METADATA_SERVICE_URL=http://metadata-service:3003
+      - TZ=Asia/Kolkata
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
