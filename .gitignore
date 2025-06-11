@@ -44,3 +44,6 @@ coverage/
 # Optional: Test files
 *.test.js
 *.spec.js
+
+# crendientails
+*credentials
