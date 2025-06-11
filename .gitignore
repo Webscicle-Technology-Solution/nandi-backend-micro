@@ -45,5 +45,6 @@ coverage/
 *.test.js
 *.spec.js
 
-# crendientails
-*credentials
+# goole json files
+# Ignore only the Firebase credentials JSON file
+admin-services/notification-serivice/src/credentials/nandipictures-34c07-firebase-adminsdk-fbsvc-797cfc3a56.json
